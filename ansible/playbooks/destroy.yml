@@ -1,0 +1,12 @@
+# Basic deploy of a service
+#
+- hosts: localhost
+  connection: local
+  remote_user: fmollura
+  become: yes
+  become_user: root
+  gather_facts: no
+  tasks:
+  - terraform:
+      project_path: "{{ lookup('env','PROVISIONDIR') }}"
+      state: absent

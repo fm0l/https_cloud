@@ -1,0 +1,67 @@
+- hosts: https
+  remote_user: ec2-user
+  become: yes
+  become_user: root
+  gather_facts: no
+  tasks:
+  - name: Install required packages
+    yum:
+      name: "{{ item }}"
+      state: latest
+    with_items:
+    - wget
+    - git
+    - net-tools
+    - bind-utils
+    - bash-completion
+    - tree
+    - tcpdump
+    - bind-utils
+    - net-tools
+    - mlocate
+    - httpd
+    - mod_ssl
+    - openssl
+
+  - name: Start and enable HTTPD
+    service:
+      name: httpd
+      state: restarted
+      enabled: true
+      
+  - name: Set hostname
+    hostname:
+      name: ssltest-sorint.ml
+      
+  - name: copy certs
+    copy:
+      src: files/{{ item }}
+      dest: /root
+    with_items:
+    - ssltest-sorint.ml.crt
+    - ssltest-sorint.ml.key
+    - ssltest-sorint.ml.ca
+    
+  - name: copy website conf
+    copy:
+      src: files/ssltest-sorint.ml.conf
+      dest: /etc/httpd/conf.d/ssltest-sorint.ml.conf
+      
+  - name: Create DocumentRoot
+    file:
+      path: /var/www/ssltest-sorint.ml
+      state: directory
+      owner: apache
+      group: apache
+      mode: 755
+      
+  - name: copy website index
+    copy:
+      src: files/index.html
+      dest: /var/www/ssltest-sorint.ml/index.html
+      
+  - name: Start and enable HTTPD
+    service:
+      name: httpd
+      state: restarted
+      enabled: true
